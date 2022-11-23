@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;BLDC_DRIVER/Core/Inc/bldc_motor.h&apos; to &apos;bldc_motor.hpp&apos;" description="Rename resource &apos;bldc_motor.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Inc/bldc_motor.h" name="bldc_motor.hpp" stamp="1669013594997" updateReferences="true"/>
+</session>
