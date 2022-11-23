@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "string.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,8 +45,9 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-static const uint8_t ADDR = 0x0D;
-static const uint8_t DATA = 0x00;
+static const uint8_t SLAVE_ADDR = 0x36 << 1;
+static const uint8_t DATA1_ADDR = 0x0E;
+static const uint8_t DATA2_ADDR = 0x0F;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,6 +73,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
   HAL_StatusTypeDef ret;
   uint8_t buf[12];
+  uint8_t data[12];
 
   /* USER CODE END 1 */
 
@@ -168,16 +171,27 @@ int main(void)
 //	  HAL_Delay(50);
 
 	  // Tell TMP102 that we want to read from the temperature register
-	 buf[0] = DATA;
+	 buf[0] = 0x00;
 
 	// Read 2 bytes from the temperature register
-	ret = HAL_I2C_Master_Receive(&hi2c1, ADDR, buf, 2, HAL_MAX_DELAY);
+	ret = HAL_I2C_Master_Transmit(&hi2c1, SLAVE_ADDR, buf, 2, HAL_MAX_DELAY);
 	if ( ret != HAL_OK ) {
-		strcpy((char*)buf, "Error Rx\r\n");
+		strcpy((char*)buf, "Error T\r\n");
+		HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
 	}
+	else
+	{
+		uint8_t DataRead1=0;
+		uint8_t DataRead2=0;
+		uint16_t Data;
+		HAL_I2C_Mem_Read(&hi2c1,SLAVE_ADDR,0x0F,1,&DataRead1,1,100);
+		HAL_I2C_Mem_Read(&hi2c1,SLAVE_ADDR,0x0E,1,&DataRead2,1,100);
+		Data = (int)((float)(DataRead1 + DataRead2 << 8)/4096*360);
 
-	// Send out buffer (temperature or error message)
-	HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+//		strcpy((char*)buf, Data);
+		HAL_UART_Transmit(&huart1, Data, strlen((uint16_t)Data), HAL_MAX_DELAY);
+
+	}
 
 	// Wait
 	HAL_Delay(500);
