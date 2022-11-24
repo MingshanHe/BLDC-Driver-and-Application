@@ -55,15 +55,36 @@ uint8_t AS5600::ReadReg(uint8_t Reg)
 
 	return DataRead;
 }
-uint16_t AS5600::GetAngle()
+uint16_t AS5600::GetAngle(void)
 {
 	int Data = (int)((float)(ReadReg(ANGLE_L) + (ReadReg(ANGLE_H) << 8))/4096*360);
-//#if Debug
+#if DEBUG
 	uint8_t buf[12];
-	sprintf((char*)buf,"%u \r\n",Data);
+	sprintf((char*)buf,"%d\r\n",Data);
 	HAL_UART_Transmit(&huart, buf, 2, HAL_MAX_DELAY);
-//#endif
+	HAL_Delay(100);
+#endif
 	return Data;
+}
+
+uint8_t AS5600::GetStatus(void)
+{
+#if DEBUG
+	uint8_t buf[12];
+	sprintf((char*)buf,"%x\r\n",(ReadReg(STATUS) & 0x38));
+	if ((ReadReg(STATUS) & 0x38) == 0x20)
+	{
+		strcpy((char*)buf, "Magnet!\r\n");
+		HAL_UART_Transmit(&huart, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		HAL_Delay(100);
+	}
+	else{
+		strcpy((char*)buf, "NO Magnet!\r\n");
+		HAL_UART_Transmit(&huart, buf, 2, HAL_MAX_DELAY);
+		HAL_Delay(100);
+	}
+#endif
+	return ReadReg(STATUS) & 0x38;
 }
 
 void AS5600::test()

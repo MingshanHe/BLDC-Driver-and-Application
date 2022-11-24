@@ -32,6 +32,8 @@ private:
 	uint8_t 	ANGLE_H		= 0x0E;
 	uint8_t 	ANGLE_L		= 0x0F;
 
+	uint8_t     STATUS		= 0x0B;
+
 private:
 	I2C_HandleTypeDef 	hi2c;
 	UART_HandleTypeDef huart;
