@@ -1,0 +1,5 @@
+../Core/Src/magnetic_sensor.cpp:9:1:AS5600::AS5600(I2C_HandleTypeDef&, UART_HandleTypeDef&)	24	static
+../Core/Src/magnetic_sensor.cpp:45:6:void AS5600::WriteReg(uint8_t, uint8_t)	32	static
+../Core/Src/magnetic_sensor.cpp:51:9:uint8_t AS5600::ReadReg(uint8_t)	40	static
+../Core/Src/magnetic_sensor.cpp:58:10:uint16_t AS5600::GetAngle()	40	static
+../Core/Src/magnetic_sensor.cpp:69:6:void AS5600::test()	48	static
