@@ -108,39 +108,38 @@ void Motor_FOC::setPhaseVoltage(void)
 
 	// 6 STEP: Discrete Mode:
 
-//    static int trap_120_map[6][3] = {
-//      {0,1,-1},{-1,1,0},{-1,0,1},{0,-1,1},{1,-1,0},{1,0,-1} // each is 60 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
-//    };
-//    // static int trap_120_state = 0;
-//    for(int i = 0; i<6; i++)
-//    {
-//    	float Ua, Ub, Uc;
-//        Ua = 0.5 + trap_120_map[i][0] * 0.5;
-//        Ub = 0.5 + trap_120_map[i][1] * 0.5;
-//        Uc = 0.5 + trap_120_map[i][2] * 0.5;
-//        _writeDutyCyclePWM(Ua, Ub, Uc);
-//        HAL_Delay(500);
-//    }
+    static int trap_120_map[6][3] = {
+      {0,1,-1},{-1,1,0},{-1,0,1},{0,-1,1},{1,-1,0},{1,0,-1} // each is 60 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
+    };
+    // static int trap_120_state = 0;
+    for(int i = 0; i<6; i++)
+    {
+    	float Ua, Ub, Uc;
+        Ua = 0.5 + trap_120_map[i][0] * 0.5;
+        Ub = 0.5 + trap_120_map[i][1] * 0.5;
+        Uc = 0.5 + trap_120_map[i][2] * 0.5;
+        _writeDutyCyclePWM(Ua, Ub, Uc);
+        HAL_Delay(500);
+    }
 
     // SINE PWM:
 
-    float _ca, _sa, Ualpha, Ubeta;
-    float Ua, Ub, Uc;
-    for(int i = 0; i<24;i++)
-    {
-    	 float angle_el = _PI_12*i;
-		 _ca = _cos(angle_el);
-		 _sa = _sin(angle_el);
-		 Ualpha =  - _sa*0.5;
-		 Ubeta  =    _ca*0.5;
-
-		 Ua = Ualpha/2 + 0.5;
-		 Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
-		 Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
-		 _writeDutyCyclePWM(Ua, Ub, Uc);
-//		 HAL_Delay(1);
-		 DWT_Delay_us(1);
-    }
+//    float _ca, _sa, Ualpha, Ubeta;
+//    float Ua, Ub, Uc;
+//    for(int i = 0; i<24;i++)
+//    {
+//    	 float angle_el = _PI_12*i;
+//		 _ca = _cos(angle_el);
+//		 _sa = _sin(angle_el);
+//		 Ualpha =  - _sa*0.5;
+//		 Ubeta  =    _ca*0.5;
+//
+//		 Ua = Ualpha/2 + 0.5;
+//		 Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
+//		 Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
+//		 _writeDutyCyclePWM(Ua, Ub, Uc);
+//		 DWT_Delay_us(1);
+//    }
 
      // others:
 //	float Uout;
