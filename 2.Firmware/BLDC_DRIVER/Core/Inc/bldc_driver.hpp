@@ -7,7 +7,9 @@
 
 #ifndef INC_BLDC_DRIVER_HPP_
 #define INC_BLDC_DRIVER_HPP_
-
+#include "main.h"
+#include "string.h"
+#include "stdio.h"
 #include <math.h>
 
 /******************************************************************************/
@@ -31,6 +33,7 @@
 #define _2PI 6.28318530718
 #define _3PI_2 4.71238898038
 #define _PI_6 0.52359877559
+#define _PI_12 0.2617993878
 /*
 	//1:  x  1  0
 	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
@@ -91,5 +94,52 @@
 float _sin(float a);
 float _cos(float a);
 float _normalizeAngle(float angle);
+
+class Motor_FOC
+{
+public:
+	Motor_FOC(float voltage_power_supply);
+	~Motor_FOC();
+public:
+	void loopFOC(void);
+	void move(float new_target);
+private:
+	void shaftAngle(float target);
+	void electricalAngle(void);
+	void setPhaseVoltage();
+
+	void delay_ms(const uint16_t ms);
+	void delay_us(const uint16_t us);
+private:
+	float shaft_angle;
+	float electrical_angle;
+	int   pole_pairs;
+private:
+	float voltage_power_supply;
+private:
+	float Voltage_d;
+	float Voltage_q;
+};
+
+/**
+  * @brief Initializes DWT_Cycle_Count for DWT_Delay_us function
+  * @return Error DWT counter
+  * 1: DWT counter Error
+  * 0: DWT counter works
+  */
+uint32_t DWT_Delay_Init(void);
+
+/**
+  * @brief This function provides a delay (in microseconds)
+  * @param microseconds: delay in microseconds
+  */
+__STATIC_INLINE void DWT_Delay_us(volatile uint32_t microseconds)
+{
+	uint32_t clk_cycle_start = DWT->CYCCNT;
+	/* Go to number of cycles for system */
+	microseconds *= (HAL_RCC_GetHCLKFreq() / 1000000);
+	/* Delay till end */
+	while ((DWT->CYCCNT - clk_cycle_start) < microseconds);
+}
 
 #endif /* INC_BLDC_DRIVER_HPP_ */

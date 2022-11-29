@@ -30,7 +30,11 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+// default pwm parameters
+#define _PWM_RESOLUTION 7 // 7bit
+#define _PWM_RANGE 999//1000 - 1 = 999
+float target;
+int count;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -67,7 +71,12 @@ static void MX_TIM1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void _writeDutyCyclePWM(float dc_a, float dc_b, float dc_c)
+{
+	 TIM1->CCR1 = (int)(dc_a * _PWM_RANGE);
+	 TIM1->CCR3 = (int)(dc_b * _PWM_RANGE);
+	 TIM1->CCR2 = (int)(dc_c * _PWM_RANGE);
+}
 /* USER CODE END 0 */
 
 /**
@@ -77,7 +86,7 @@ static void MX_TIM1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  DWT_Delay_Init();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -87,6 +96,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
   AS5600 as5600(hi2c1, huart1);
+  Motor_FOC motor(12);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -104,14 +114,18 @@ int main(void)
   /* USER CODE BEGIN 2 */
   //  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
-  HAL_TIMEx_PWMN_Start(&htim1, 	TIM_CHANNEL_1);
+
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, 	TIM_CHANNEL_2);
-  HAL_TIMEx_PWMN_Start(&htim1, 	TIM_CHANNEL_3);
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
 
 
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+
+  target = 0;
+  count = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -119,87 +133,13 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-//	  as5600.GetStatus();
-//	  as5600.GetAngle();
-//	  HAL_Delay(100);
+	//	  as5600.GetStatus();
+	//	  as5600.GetAngle();
+	//	  HAL_Delay(100);
 
-	  htim1.Instance->CCR1 = _sin(_PI_3)*999;
-	  htim1.Instance->CCR2 = _sin(_PI_2)*999;
-	  htim1.Instance->CCR3 = _sin(_PI_6)*999;
 
-	//1:  x  1  0
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 	GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //1
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET); //3
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  GPIO_PIN_RESET); //2
-	  htim1.Instance->CCR1 = 999;
-	  htim1.Instance->CCR2 = 999;
-	  htim1.Instance->CCR3 = 0;
-	  HAL_Delay(50);
-	//2:  1  x  0
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 	GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  GPIO_PIN_RESET);
-	  htim1.Instance->CCR1 = 999;
-	  htim1.Instance->CCR2 = 999;
-	  htim1.Instance->CCR3 = 0;
-	  HAL_Delay(50);
-	//3:  1  0  x
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 	GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  GPIO_PIN_SET);
-	  htim1.Instance->CCR1 = 999;
-	  htim1.Instance->CCR2 = 0;
-	  htim1.Instance->CCR3 = 999;
-	  HAL_Delay(50);
-	//4:  x  0  1
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 	GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  GPIO_PIN_SET);
-	  htim1.Instance->CCR1 = 999;
-	  htim1.Instance->CCR2 = 0;
-	  htim1.Instance->CCR3 = 999;
-	  HAL_Delay(50);
-	//5:  0  x  1
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 	GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  GPIO_PIN_SET);
-	  htim1.Instance->CCR1 = 0;
-	  htim1.Instance->CCR2 = 999;
-	  htim1.Instance->CCR3 = 999;
-	  HAL_Delay(50);
-	//6:  0  1  x
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, 	GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
-//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  GPIO_PIN_SET);
-	  htim1.Instance->CCR1 = 0;
-	  htim1.Instance->CCR2 = 999;
-	  htim1.Instance->CCR3 = 999;
-	  HAL_Delay(50);
-
+	//	  motor.move(target);
+	  motor.loopFOC();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -217,10 +157,13 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -230,12 +173,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -393,6 +336,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
