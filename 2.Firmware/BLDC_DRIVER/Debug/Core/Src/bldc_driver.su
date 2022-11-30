@@ -7,5 +7,5 @@ d:\professional software\stm32cubeide\stm32cubeide_1.10.1\stm32cubeide\plugins\c
 ../Core/Src/bldc_driver.cpp:89:6:void Motor_FOC::move(float)	16	static
 ../Core/Src/bldc_driver.cpp:95:6:void Motor_FOC::shaftAngle(float)	16	static
 ../Core/Src/bldc_driver.cpp:101:6:void Motor_FOC::electricalAngle()	24	static
-../Core/Src/bldc_driver.cpp:106:6:void Motor_FOC::setPhaseVoltage()	64	static
-../Core/Src/bldc_driver.cpp:205:10:uint32_t DWT_Delay_Init()	4	static,ignoring_inline_asm
+../Core/Src/bldc_driver.cpp:106:6:void Motor_FOC::setPhaseVoltage()	16	static
+../Core/Src/bldc_driver.cpp:206:10:uint32_t DWT_Delay_Init()	4	static,ignoring_inline_asm

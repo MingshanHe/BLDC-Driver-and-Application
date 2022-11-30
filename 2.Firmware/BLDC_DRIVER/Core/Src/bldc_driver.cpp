@@ -124,23 +124,23 @@ void Motor_FOC::setPhaseVoltage(void)
 
     // SINE PWM:
 
-    float _ca, _sa, Ualpha, Ubeta;
-    float Ua, Ub, Uc;
-    for(int i = 0; i<24;i++)
-    {
-    	 float angle_el = _PI_12*i;
-		 _ca = _cos(angle_el);
-		 _sa = _sin(angle_el);
-		 Ualpha =  - _sa*0.5;
-		 Ubeta  =    _ca*0.5;
-
-		 Ua = Ualpha/2 + 0.5;
-		 Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
-		 Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
-		 _writeDutyCyclePWM(Ua, Ub, Uc);
+//    float _ca, _sa, Ualpha, Ubeta;
+//    float Ua, Ub, Uc;
+//    for(int i = 0; i<24;i++)
+//    {
+//    	 float angle_el = _PI_12*i;
+//		 _ca = _cos(angle_el);
+//		 _sa = _sin(angle_el);
+//		 Ualpha =  - _sa*0.5;
+//		 Ubeta  =    _ca*0.5;
+//
+//		 Ua = Ualpha/2 + 0.5;
+//		 Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
+//		 Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
+//		 _writeDutyCyclePWM(Ua, Ub, Uc);
 //		 HAL_Delay(1);
-		 DWT_Delay_us(1);
-    }
+////		 DWT_Delay_us(1);
+//    }
 
      // others:
 //	float Uout;

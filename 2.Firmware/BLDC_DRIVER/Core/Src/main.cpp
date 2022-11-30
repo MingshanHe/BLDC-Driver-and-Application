@@ -23,7 +23,6 @@
 /* USER CODE BEGIN Includes */
 #include "string.h"
 #include "stdio.h"
-
 #include "magnetic_sensor.hpp"
 #include "bldc_driver.hpp"
 /* USER CODE END Includes */
@@ -34,7 +33,7 @@
 #define _PWM_RESOLUTION 7 // 7bit
 #define _PWM_RANGE 999//1000 - 1 = 999
 float target;
-int count;
+int count = 0;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -50,6 +49,7 @@ int count;
 I2C_HandleTypeDef hi2c1;
 
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart1;
 
@@ -65,12 +65,49 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if(htim->Instance == TIM2)
+  {
+	  //6 STEP: Discrete Mode:
+//	  if(count == 6) count = 0;
+//	  static int trap_120_map[6][3] = {
+//		{0,1,-1},{-1,1,0},{-1,0,1},{0,-1,1},{1,-1,0},{1,0,-1} // each is 60 degrees with values for 3 phases of 1=positive -1=negative 0=high-z
+//	  };
+//	  float Ua, Ub, Uc;
+//	  Ua = 0.5 + trap_120_map[count][0] * 0.5;
+//	  Ub = 0.5 + trap_120_map[count][1] * 0.5;
+//	  Uc = 0.5 + trap_120_map[count][2] * 0.5;
+//	  _writeDutyCyclePWM(Ua, Ub, Uc);
+//	  count++;
+
+	  // SINE PWM:
+	  float _ca, _sa, Ualpha, Ubeta;
+	  float Ua, Ub, Uc;
+	  if(count == 24) count = 0;
+
+	  float angle_el = _PI_12*count;
+	  _ca = _cos(angle_el);
+	  _sa = _sin(angle_el);
+	  Ualpha =  - _sa*0.5;
+	  Ubeta  =    _ca*0.5;
+
+	  Ua = Ualpha/2 + 0.5;
+	  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
+	  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
+	  _writeDutyCyclePWM(Ua, Ub, Uc);
+	  count++;
+
+  }
+}
+
 void _writeDutyCyclePWM(float dc_a, float dc_b, float dc_c)
 {
 	 TIM1->CCR1 = (int)(dc_a * _PWM_RANGE);
@@ -86,7 +123,7 @@ void _writeDutyCyclePWM(float dc_a, float dc_b, float dc_c)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  DWT_Delay_Init();
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -111,9 +148,9 @@ int main(void)
   MX_I2C1_Init();
   MX_USART1_UART_Init();
   MX_TIM1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  //  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-
+  HAL_TIM_Base_Start_IT(&htim2);
 
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, 	TIM_CHANNEL_2);
@@ -123,23 +160,23 @@ int main(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-
-  target = 0;
-  count = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-	//	  as5600.GetStatus();
-	//	  as5600.GetAngle();
-	//	  HAL_Delay(100);
+	  /*
+	  as5600.GetStatus();
+	  as5600.GetAngle();
+	  HAL_Delay(100);
 
 
-	//	  motor.move(target);
+	  motor.move(target);
+	  */
 	  motor.loopFOC();
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -290,6 +327,51 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 2 */
   HAL_TIM_MspPostInit(&htim1);
+
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 120-1;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 1000-1;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
 
 }
 
