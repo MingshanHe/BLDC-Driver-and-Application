@@ -34,6 +34,7 @@
 #define _3PI_2 4.71238898038
 #define _PI_6 0.52359877559
 #define _PI_12 0.2617993878
+#define _PI_180 0.0174532924
 /*
 	//1:  x  1  0
 	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);

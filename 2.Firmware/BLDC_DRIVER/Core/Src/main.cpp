@@ -34,6 +34,8 @@
 #define _PWM_RANGE 999//1000 - 1 = 999
 float target;
 int count = 0;
+int times = 0;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -89,21 +91,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //	  count++;
 
 	  // SINE PWM:
-	  float _ca, _sa, Ualpha, Ubeta;
-	  float Ua, Ub, Uc;
-	  if(count == 24) count = 0;
+	  if(times<360*10){
+		  float _ca, _sa, Ualpha, Ubeta;
+		  float Ua, Ub, Uc;
+		  if(count == 360) count = 0;
 
-	  float angle_el = _PI_12*count;
-	  _ca = _cos(angle_el);
-	  _sa = _sin(angle_el);
-	  Ualpha =  - _sa*0.5;
-	  Ubeta  =    _ca*0.5;
+		  float angle_el = _PI_180*count;
+		  _ca = _cos(angle_el);
+		  _sa = _sin(angle_el);
+		  Ualpha =  - _sa*0.5;
+		  Ubeta  =    _ca*0.5;
 
-	  Ua = Ualpha/2 + 0.5;
-	  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
-	  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
-	  _writeDutyCyclePWM(Ua, Ub, Uc);
-	  count++;
+		  Ua = Ualpha/2 + 0.5;
+		  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
+		  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
+		  _writeDutyCyclePWM(Ua, Ub, Uc);
+		  count++;
+		  times++;
+	  }
 
   }
 }
@@ -349,7 +354,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 120-1;
+  htim2.Init.Prescaler = 240-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 1000-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
