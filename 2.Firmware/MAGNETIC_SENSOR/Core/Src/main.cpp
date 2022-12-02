@@ -28,7 +28,13 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+uint8_t AS5600_ADDR = 0x36 << 1;
+uint8_t	RAWANG_H	= 0x0C;
+uint8_t RAWANG_L	= 0x0D;
+uint8_t ANGLE_H		= 0x0E;
+uint8_t ANGLE_L		= 0x0F;
+uint8_t DMA_I2C_DATA[2];
+uint8_t buf[12];
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -42,6 +48,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
+DMA_HandleTypeDef hdma_i2c1_rx;
 
 UART_HandleTypeDef huart1;
 
@@ -52,6 +59,7 @@ UART_HandleTypeDef huart1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
@@ -60,6 +68,13 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+//void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
+//{
+//  // RX Done .. Do Something!
+//	int Data = (DMA_I2C_DATA[1]|(DMA_I2C_DATA[0] << 8));
+//	sprintf((char*)buf,"%d\r\n",Data);
+//}
 
 /* USER CODE END 0 */
 
@@ -91,10 +106,14 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
+//  HAL_I2C_Master_Receive_DMA(&hi2c1, AS5600_ADDR, DMA_I2C_DATA, 18);
+//  HAL_I2C_Mem_Read_DMA(&hi2c1, AS5600_ADDR, RAWANG_H, 1, &DMA_I2C_DATA[0], 100);
+//  HAL_I2C_Mem_Read_DMA(&hi2c1, AS5600_ADDR, RAWANG_L, 1, &DMA_I2C_DATA[1], 100);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -103,7 +122,24 @@ int main(void)
   {
 	as5600.GetStatus();
 	as5600.GetAngle();
+//	  int Data = 100;
+//	  sprintf((char*)buf,"%d\r\n",Data);
+//	  HAL_UART_Transmit(&huart1, buf,  strlen((char*)buf), HAL_MAX_DELAY);
 	HAL_Delay(100);
+
+//	int Data = (DMA_I2C_DATA[1]|(DMA_I2C_DATA[0] << 8));
+//	uint8_t recv;
+//	if ((recv = HAL_I2C_Mem_Read_DMA(&hi2c1, AS5600_ADDR,RAWANG_L, I2C_MEMADD_SIZE_8BIT, &DMA_I2C_DATA[1], 1)) == HAL_OK){
+//		sprintf((char*)buf,"%d\r\n",DMA_I2C_DATA[1]);
+//		HAL_UART_Transmit(&huart1, buf,  strlen((char*)buf), HAL_MAX_DELAY);
+//		HAL_Delay(100);
+//	}
+//	else{
+//		int Data = 100;
+//		sprintf((char*)buf,"%d\r\n",Data);
+//		HAL_UART_Transmit(&huart1, buf,  strlen((char*)buf), HAL_MAX_DELAY);
+//		HAL_Delay(100);
+//	}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -163,7 +199,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.ClockSpeed = 10000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -211,6 +247,22 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 
 }
 
