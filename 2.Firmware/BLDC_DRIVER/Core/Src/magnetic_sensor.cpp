@@ -58,12 +58,12 @@ uint8_t AS5600::ReadReg(uint8_t Reg)
 uint16_t AS5600::GetAngle(void)
 {
 	int Data = (int)((float)(ReadReg(ANGLE_L) + (ReadReg(ANGLE_H) << 8))/4096*360);
-#if DEBUG
-	uint8_t buf[12];
-	sprintf((char*)buf,"%d\r\n",Data);
-	HAL_UART_Transmit(&huart, buf, 2, HAL_MAX_DELAY);
-	HAL_Delay(100);
-#endif
+//#if DEBUG
+//	uint8_t buf[12];
+//	sprintf((char*)buf,"%d\r\n",Data);
+//	HAL_UART_Transmit(&huart, buf, 2, HAL_MAX_DELAY);
+//	HAL_Delay(100);
+//#endif
 	return Data;
 }
 

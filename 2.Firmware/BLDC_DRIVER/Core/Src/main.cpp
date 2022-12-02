@@ -35,7 +35,15 @@
 float target;
 int count = 0;
 int times = 0;
-
+uint8_t 	AS5600_ADDR = 0x36 << 1;
+uint8_t		RAWANG_H	= 0x0C;
+uint8_t 	RAWANG_L	= 0x0D;
+uint8_t 	ANGLE_H		= 0x0E;
+uint8_t 	ANGLE_L		= 0x0F;
+uint8_t flag = 1;
+uint8_t buf[12];
+uint8_t recv;
+uint8_t DataRead[2];
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -91,23 +99,32 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //	  count++;
 
 	  // SINE PWM:
-	  if(times<360*10){
-		  float _ca, _sa, Ualpha, Ubeta;
-		  float Ua, Ub, Uc;
-		  if(count == 360) count = 0;
 
-		  float angle_el = _PI_180*count;
-		  _ca = _cos(angle_el);
-		  _sa = _sin(angle_el);
-		  Ualpha =  - _sa*0.5;
-		  Ubeta  =    _ca*0.5;
+	  if ((recv = HAL_I2C_Mem_Read(&hi2c1,(AS5600_ADDR),RAWANG_H,1,&DataRead[0],1,100)) == HAL_OK)
+	  {
+		  if ((recv = HAL_I2C_Mem_Read(&hi2c1,(AS5600_ADDR),RAWANG_L,1,&DataRead[1],1,100)) == HAL_OK){
+			  int Data = (DataRead[1]|(DataRead[0] << 8));
+			  if(Data - 1900 > 0){
+				  if(times<24*100 && flag == 1){
+					  float _ca, _sa, Ualpha, Ubeta;
+					  float Ua, Ub, Uc;
+					  if(count == 24) count = 0;
 
-		  Ua = Ualpha/2 + 0.5;
-		  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
-		  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
-		  _writeDutyCyclePWM(Ua, Ub, Uc);
-		  count++;
-		  times++;
+					  float angle_el = _PI_12*count;
+					  _ca = _cos(angle_el);
+					  _sa = _sin(angle_el);
+					  Ualpha =  - _sa*0.5;
+					  Ubeta  =    _ca*0.5;
+
+					  Ua = Ualpha/2 + 0.5;
+					  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
+					  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
+					  _writeDutyCyclePWM(Ua, Ub, Uc);
+					  count++;
+					  times++;
+				  }
+			  }
+		  }
 	  }
 
   }
@@ -179,7 +196,11 @@ int main(void)
 
 	  motor.move(target);
 	  */
-	  motor.loopFOC();
+//	  motor.loopFOC();
+//	  int Data = DataRead;
+//	strcpy((char*)buf, "Magnet!\r\n");
+//	HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+//	HAL_Delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
