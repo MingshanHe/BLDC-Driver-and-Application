@@ -29,6 +29,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+
 // default pwm parameters
 #define _PWM_RESOLUTION 7 // 7bit
 #define _PWM_RANGE 999//1000 - 1 = 999
@@ -40,6 +41,7 @@ uint8_t		RAWANG_H	= 0x0C;
 uint8_t 	RAWANG_L	= 0x0D;
 uint8_t 	ANGLE_H		= 0x0E;
 uint8_t 	ANGLE_L		= 0x0F;
+uint8_t     STATUS		= 0x0B;
 uint8_t flag = 1;
 uint8_t buf[12];
 uint8_t recv;
@@ -82,6 +84,8 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+AS5600 as5600(hi2c1, huart1);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if(htim->Instance == TIM2)
@@ -127,23 +131,40 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //		  }
 //	  }
 
+//	  uint8_t buf[12];
+//	  uint8_t DataRead = 0;
+//	  HAL_I2C_Mem_Read(&hi2c1,(AS5600_ADDR),STATUS,1,&DataRead,1,100);
+//	  sprintf((char*)buf,"%x\r\n",(DataRead & 0x38));
+//	  if (DataRead == 0x20)
+//	  {
+//		  strcpy((char*)buf, "Magnet!\r\n");
+//		  HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+//		  HAL_Delay(100);
+//	  }
+//	  else{
+//		  strcpy((char*)buf, "NO Magnet!\r\n");
+//		  HAL_UART_Transmit(&huart1, buf, 2, HAL_MAX_DELAY);
+//		  HAL_Delay(100);
+//	  }
 
-
-	  float _ca, _sa, Ualpha, Ubeta;
-	  float Ua, Ub, Uc;
-	  if(count == 720) count = 0;
-
-	  float angle_el = _PI_360*count;
-	  _ca = _cos(angle_el);
-	  _sa = _sin(angle_el);
-	  Ualpha =  - _sa*0.5;
-	  Ubeta  =    _ca*0.5;
-
-	  Ua = Ualpha/2 + 0.5;
-	  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
-	  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
-	  _writeDutyCyclePWM(Ua, Ub, Uc);
-	  count++;
+//	  as5600.GetStatus();
+//	  as5600.GetAngle();
+//	  HAL_Delay(100);
+//	  float _ca, _sa, Ualpha, Ubeta;
+//	  float Ua, Ub, Uc;
+//	  if(count == 720) count = 0;
+//
+//	  float angle_el = _PI_360*count;
+//	  _ca = _cos(angle_el);
+//	  _sa = _sin(angle_el);
+//	  Ualpha =  - _sa*0.5;
+//	  Ubeta  =    _ca*0.5;
+//
+//	  Ua = Ualpha/2 + 0.5;
+//	  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
+//	  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
+//	  _writeDutyCyclePWM(Ua, Ub, Uc);
+//	  count++;
   }
 }
 
@@ -189,11 +210,11 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim2);
+//  HAL_TIM_Base_Start_IT(&htim2);
 
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim1, 	TIM_CHANNEL_2);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+//  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+//  HAL_TIM_PWM_Start(&htim1, 	TIM_CHANNEL_2);
+//  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
 
 
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
@@ -206,9 +227,9 @@ int main(void)
   while (1)
   {
 
-//	  as5600.GetStatus();
-//	  as5600.GetAngle();
-//	  HAL_Delay(100);
+	  as5600.GetStatus();
+	  as5600.GetAngle();
+	  HAL_Delay(100);
 
 
 //	  motor.move(target);

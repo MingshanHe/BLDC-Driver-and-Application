@@ -69,7 +69,7 @@ uint16_t AS5600::GetAngle(void)
 
 uint8_t AS5600::GetStatus(void)
 {
-#if DEBUG
+
 	uint8_t buf[12];
 	sprintf((char*)buf,"%x\r\n",(ReadReg(STATUS) & 0x38));
 	if ((ReadReg(STATUS) & 0x38) == 0x20)
@@ -83,7 +83,7 @@ uint8_t AS5600::GetStatus(void)
 		HAL_UART_Transmit(&huart, buf, 2, HAL_MAX_DELAY);
 		HAL_Delay(100);
 	}
-#endif
+
 	return ReadReg(STATUS) & 0x38;
 }
 

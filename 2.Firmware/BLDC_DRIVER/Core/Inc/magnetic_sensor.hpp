@@ -14,7 +14,7 @@
 class AS5600{
 public:
 	AS5600(I2C_HandleTypeDef &hi2c_, UART_HandleTypeDef &huart_);
-	~AS5600();
+	~AS5600(){};
 public:
 	uint16_t 	GetAngle(void);
 	uint16_t 	GetRawAngle(void);
