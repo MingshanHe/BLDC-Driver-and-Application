@@ -16,11 +16,23 @@ public:
 	AS5600(I2C_HandleTypeDef &hi2c_, UART_HandleTypeDef &huart_);
 	~AS5600(){};
 public:
-	uint16_t 	GetAngle(void);
+	void 		GetAngle(void);
+	void		GetVelocity(void);
 	uint16_t 	GetRawAngle(void);
 	uint8_t  	GetStatus(void);
 	void 		test();
+public:
+	uint8_t			Status;
+	uint16_t		Angle;
+	int				Current_Angle;
+	int				Previous_Angle;
+	int				Current_Velocity;
+	int				Previous_Velocity;
 
+	unsigned long 	now_s;
+	unsigned long 	loop_timestamp;
+	float			Ts;
+	bool			velocity_init;
 private:
 	void 		WriteReg(uint8_t Reg, uint8_t Data);
 	uint8_t 	ReadReg(uint8_t Reg);
@@ -51,8 +63,8 @@ private:
 	// SENSOR BURN COMMANDS
 	uint8_t		BURN		= 0xFF;
 private:
-	I2C_HandleTypeDef 	hi2c;
-	UART_HandleTypeDef huart;
+	I2C_HandleTypeDef 		hi2c;
+	UART_HandleTypeDef 		huart;
 
 };
 

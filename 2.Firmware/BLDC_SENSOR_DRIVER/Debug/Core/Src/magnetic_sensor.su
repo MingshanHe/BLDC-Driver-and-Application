@@ -1,6 +1,7 @@
 ../Core/Src/magnetic_sensor.cpp:9:1:AS5600::AS5600(I2C_HandleTypeDef&, UART_HandleTypeDef&)	24	static
-../Core/Src/magnetic_sensor.cpp:45:6:void AS5600::WriteReg(uint8_t, uint8_t)	32	static
-../Core/Src/magnetic_sensor.cpp:51:9:uint8_t AS5600::ReadReg(uint8_t)	40	static
-../Core/Src/magnetic_sensor.cpp:58:10:uint16_t AS5600::GetAngle()	40	static
-../Core/Src/magnetic_sensor.cpp:72:9:uint8_t AS5600::GetStatus()	40	static
-../Core/Src/magnetic_sensor.cpp:92:6:void AS5600::test()	48	static
+../Core/Src/magnetic_sensor.cpp:47:6:void AS5600::WriteReg(uint8_t, uint8_t)	32	static
+../Core/Src/magnetic_sensor.cpp:53:9:uint8_t AS5600::ReadReg(uint8_t)	40	static
+../Core/Src/magnetic_sensor.cpp:60:6:void AS5600::GetAngle()	40	static
+../Core/Src/magnetic_sensor.cpp:74:6:void AS5600::GetVelocity()	40	static
+../Core/Src/magnetic_sensor.cpp:98:9:uint8_t AS5600::GetStatus()	40	static
+../Core/Src/magnetic_sensor.cpp:118:6:void AS5600::test()	48	static

@@ -40,6 +40,8 @@ AS5600::AS5600(I2C_HandleTypeDef &hi2c_, UART_HandleTypeDef &huart_)
 	{
 		Error_Handler();
 	}
+	velocity_init = false;
+
 }
 
 void AS5600::WriteReg(uint8_t Reg, uint8_t Data)
@@ -55,18 +57,42 @@ uint8_t AS5600::ReadReg(uint8_t Reg)
 
 	return DataRead;
 }
-uint16_t AS5600::GetAngle(void)
+void AS5600::GetAngle(void)
 {
 	uint8_t buf[12];
 //	Data[0] = ReadReg(ANGLE_L);
 //	Data[1] = (ReadReg(ANGLE_H) << 8);
-	int Data = (ReadReg(ANGLE_L)|(ReadReg(ANGLE_H) << 8));
-	sprintf((char*)buf,"%d\r\n",(ReadReg(ANGLE_L)|(ReadReg(ANGLE_H) << 8)));
-	sprintf((char*)buf,"%d\r\n",Data);
+	Current_Angle = (ReadReg(ANGLE_L)|(ReadReg(ANGLE_H) << 8));
+//	sprintf((char*)buf,"%d\r\n",(ReadReg(ANGLE_L)|(ReadReg(ANGLE_H) << 8)));
+	sprintf((char*)buf,"%d\r\n",Current_Angle);
 	HAL_UART_Transmit(&huart, buf,  strlen((char*)buf), HAL_MAX_DELAY);
-	HAL_Delay(100);
+//	HAL_Delay(100);
 //	return Data;
-	return 1;
+//	return 1;
+}
+
+void AS5600::GetVelocity(void)
+{
+	if(!velocity_init)
+	{
+			loop_timestamp = HAL_GetTick()*1e-3;
+			Previous_Angle = (ReadReg(ANGLE_L)|(ReadReg(ANGLE_H) << 8));
+			Current_Velocity = 0;
+			velocity_init = true;
+	}
+	else
+	{
+		uint8_t buf[12];
+		now_s = HAL_GetTick()*1e-3;
+		Current_Angle = (ReadReg(ANGLE_L)|(ReadReg(ANGLE_H) << 8));
+		Previous_Velocity = Current_Velocity;
+		Current_Velocity = (Current_Angle - Previous_Angle)/(now_s - loop_timestamp);
+		Previous_Angle = Current_Angle;
+		Ts			   = (now_s - loop_timestamp);
+		loop_timestamp = now_s;
+//		sprintf((char*)buf,"%d\r\n",Velocity);
+//		HAL_UART_Transmit(&huart, buf,  strlen((char*)buf), HAL_MAX_DELAY);
+	}
 }
 
 uint8_t AS5600::GetStatus(void)
@@ -78,12 +104,12 @@ uint8_t AS5600::GetStatus(void)
 	{
 		strcpy((char*)buf, "Magnet!\r\n");
 		HAL_UART_Transmit(&huart, buf, strlen((char*)buf), HAL_MAX_DELAY);
-		HAL_Delay(100);
+//		HAL_Delay(100);
 	}
 	else{
 		strcpy((char*)buf, "NO Magnet!\r\n");
 		HAL_UART_Transmit(&huart, buf, 2, HAL_MAX_DELAY);
-		HAL_Delay(100);
+//		HAL_Delay(100);
 	}
 #endif
 	return ReadReg(STATUS) & 0x38;
