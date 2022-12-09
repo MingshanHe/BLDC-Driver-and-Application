@@ -64,8 +64,8 @@ void AS5600::GetAngle(void)
 //	Data[1] = (ReadReg(ANGLE_H) << 8);
 	Current_Angle = (ReadReg(ANGLE_L)|(ReadReg(ANGLE_H) << 8));
 //	sprintf((char*)buf,"%d\r\n",(ReadReg(ANGLE_L)|(ReadReg(ANGLE_H) << 8)));
-	sprintf((char*)buf,"%d\r\n",Current_Angle);
-	HAL_UART_Transmit(&huart, buf,  strlen((char*)buf), HAL_MAX_DELAY);
+//	sprintf((char*)buf,"%d\r\n",Current_Angle);
+//	HAL_UART_Transmit(&huart, buf,  strlen((char*)buf), HAL_MAX_DELAY);
 //	HAL_Delay(100);
 //	return Data;
 //	return 1;

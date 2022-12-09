@@ -29,6 +29,11 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+//UP:
+//int		angle_data[10] = {1500, 2000, 1600, 1400, 1800, 1500, 1600, 1700, 1500, 1800};
+//DOWN:
+int		angle_data[10] = {2500, 2700, 2300, 2500, 2400, 2600, 2700, 2400, 2700, 2400};
+int		index_ = 0;
 #define _PWM_RANGE 999
 
 uint8_t AS5600_ADDR = 0x36 << 1;
@@ -89,35 +94,46 @@ AS5600 as5600(hi2c1, huart1);
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART1) {
-		if(rx_flag==0)
-		{
-			HAL_UART_Transmit(&huart1, &rx_data, 1, 10);
-			Desired_Angle 	= int(rx_data-'0')*100;
-			flag			= false;
-			rx_flag = 1;
-		}
-		else if(rx_flag==1)
-		{
+//		if(rx_flag==0)
+//		{
 //			HAL_UART_Transmit(&huart1, &rx_data, 1, 10);
-			Desired_Angle  += int(rx_data-'0')*10;
-			flag			= false;
-			rx_flag = 2;
-		}
-		else
-		{
-			Desired_Angle  += int(rx_data-'0');
-			flag			= true;
-			if((Desired_Angle-as5600.Current_Angle)>0){direction = -1;}
-			else{direction = 1;}
-			rx_flag = 0;
-		}
-
-//		if(rx_data == '1'){
-//			HAL_UART_Transmit(&huart1, &rx_data, 1, 10);
-//			flag = 0;
-////				  as5600.GetStatus();
-////				  as5600.GetAngle();
+//			Desired_Angle 	= int(rx_data-'0')*100;
+//			flag			= false;
+//			rx_flag = 1;
 //		}
+//		else if(rx_flag==1)
+//		{
+//			Desired_Angle  += int(rx_data-'0')*10;
+//			flag			= false;
+//			rx_flag = 2;
+//		}
+//		else
+//		{
+//			Desired_Angle  += int(rx_data-'0');
+//			flag			= true;
+//			if((Desired_Angle-as5600.Current_Angle)>0){direction = -1;}
+//			else{direction = 1;}
+//			rx_flag = 0;
+//		}
+
+		if(rx_data == '0'){
+			HAL_UART_Transmit(&huart1, &rx_data, 1, 10);
+			flag = true;
+			Desired_Angle = angle_data[index_];
+			//UP:
+//			if((Desired_Angle-as5600.Current_Angle)>0){direction = -1;}
+//			else{direction = 1;}
+			//DOWN:
+			if((Desired_Angle-as5600.Current_Angle)>0){direction = 1;}
+			else{direction = -1;}
+			index_++;
+			if(index_>10)
+			{
+				direction = 0;
+			}
+//				  as5600.GetStatus();
+//				  as5600.GetAngle();
+		}
 		HAL_UART_Receive_IT(&huart1, &rx_data, 1);
 
 
@@ -219,11 +235,11 @@ int main(void)
 
 	  //Position:
 
-//	  as5600.GetAngle();
-//	  if(flag)
-//	  {
-//		  if(as5600.Current_Angle >= Desired_Angle-3 && as5600.Current_Angle <= Desired_Angle+3)
-//		  {
+	  as5600.GetAngle();
+	  if(flag)
+	  {
+		  if(as5600.Current_Angle >= Desired_Angle-10 && as5600.Current_Angle <= Desired_Angle+10)
+		  {
 //			  float _ca, _sa, Ualpha, Ubeta;
 //			  float Ua, Ub, Uc;
 //
@@ -236,27 +252,30 @@ int main(void)
 //			  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
 //			  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
 //			  _writeDutyCyclePWM(Ua, Ub, Uc);
-//		  }
-//		  else
-//		  {
-//			  float _ca, _sa, Ualpha, Ubeta;
-//			  float Ua, Ub, Uc;
-//
-//			  angle_el = angle_el + 0.01*direction;// Delta_Velocity*1000*as5600.Ts;
-//			  if(angle_el > _2_PI){angle_el = 0;}
-//
-//			  _ca = _cos(angle_el);
-//			  _sa = _sin(angle_el);
-//			  Ualpha =  - _sa*0.5;
-//			  Ubeta  =    _ca*0.5;
-//
-//			  Ua = Ualpha/2 + 0.5;
-//			  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
-//			  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
-//			  _writeDutyCyclePWM(Ua, Ub, Uc);
-//			  count++;
-//		  }
-//	  }
+			  uint8_t Test[] = "1";
+			  HAL_UART_Transmit(&huart1,Test,sizeof(Test),10);
+		  }
+		  else
+		  {
+			  float _ca, _sa, Ualpha, Ubeta;
+			  float Ua, Ub, Uc;
+
+			  angle_el = angle_el + _PI_48*direction;// Delta_Velocity*1000*as5600.Ts;
+			  if(angle_el > _2_PI){angle_el = 0;}
+			  else if(angle_el < 0){angle_el = _2_PI;}
+
+			  _ca = _cos(angle_el);
+			  _sa = _sin(angle_el);
+			  Ualpha =  - _sa*0.5;
+			  Ubeta  =    _ca*0.5;
+
+			  Ua = Ualpha/2 + 0.5;
+			  Ub = (-0.5 * Ualpha  + _SQRT3_2 * Ubeta)/2+0.5;
+			  Uc = (-0.5 * Ualpha - _SQRT3_2 * Ubeta)/2+0.5;
+			  _writeDutyCyclePWM(Ua, Ub, Uc);
+
+		  }
+	  }
 
 
     /* USER CODE END WHILE */
