@@ -18,7 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "stdio.h"
+#include "string.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -26,7 +27,10 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+uint8_t    	rx4_flag = 0;
+uint8_t 	rx5_flag = 0;
+uint8_t 	rx4_data;
+uint8_t 	rx5_data;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -57,7 +61,42 @@ static void MX_UART5_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	if (huart->Instance == UART4) {
+		if(rx4_data == '1'){
+			if(rx5_flag == 1)
+			{
+				uint8_t Test[] = "0"; //Data to send
+				HAL_UART_Transmit(&huart4,Test,sizeof(Test),10);// Sending in normal mode
+				HAL_UART_Transmit(&huart5,Test,sizeof(Test),10);// Sending in normal mode
+				rx4_flag = 0;
+				rx5_flag = 0;
+			}
+			else
+			{
+				rx4_flag = 1;
+			}
+		}
+		HAL_UART_Receive_IT(&huart4, &rx4_data, 1);
+	}
+	if (huart->Instance == UART5) {
+		if(rx5_data == '1'){
+			if(rx4_flag == 1)
+			{
+				uint8_t Test[] = "0"; //Data to send
+				HAL_UART_Transmit(&huart4,Test,sizeof(Test),10);// Sending in normal mode
+				HAL_UART_Transmit(&huart5,Test,sizeof(Test),10);// Sending in normal mode
+				rx4_flag = 0;
+				rx5_flag = 0;
+			}
+			else
+			{
+				rx5_flag = 1;
+			}
+		}
+		HAL_UART_Receive_IT(&huart5, &rx5_data, 1);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -91,7 +130,15 @@ int main(void)
   MX_UART4_Init();
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
+  HAL_UART_Receive_IT(&huart4, &rx4_data, 1);
+  HAL_UART_Receive_IT(&huart5, &rx5_data, 1);
 
+  uint8_t Test[] = "0"; //Data to send
+  HAL_UART_Transmit(&huart5,Test,sizeof(Test),10);// Sending in normal mode
+  HAL_UART_Transmit(&huart4,Test,sizeof(Test),10);// Sending in normal mode
+//  HAL_Delay(100);
+
+//  HAL_Delay(5000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -99,10 +146,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  uint8_t Test[] = "Hello World !!!\r\n"; //Data to send
-	  HAL_UART_Transmit(&huart4,Test,sizeof(Test),10);// Sending in normal mode
-	  HAL_UART_Transmit(&huart5,Test,sizeof(Test),10);// Sending in normal mode
-	  HAL_Delay(1000);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
